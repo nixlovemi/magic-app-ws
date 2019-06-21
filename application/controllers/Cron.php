@@ -26,7 +26,6 @@ class Cron extends CI_Controller {
       $vSetCode = $rs["set_code"];
 
       list($retInsert, $retUpdate) = fncUpdateCardsBySet($vSetCode);
-      usleep(250000); //0.25 seg
       // @todo tratar retorno
 
       // atualiza os sets pro proximo update
@@ -50,6 +49,7 @@ class Cron extends CI_Controller {
     $this->db->from('tb_card');
     $this->db->join('tb_card_images', 'cim_car_id = car_id', 'left');
     $this->db->where('cim_id IS NULL');
+    $this->db->where("car_released_at <= '".date('Y-m-d')."'");
     $this->db->order_by('car_released_at', 'DESC');
     $this->db->limit(30);
 
@@ -110,7 +110,6 @@ class Cron extends CI_Controller {
         copy($urlSmall, FCPATH.$newUrlSmall);
         copy($urlNormal, FCPATH.$newUrlNormal);
         copy($urlLarge, FCPATH.$newUrlLarge);
-        usleep(250000); //0.25 seg
 
         $infoLoop["cim_url_small"]  = $newUrlSmall;
         $infoLoop["cim_name"]       = str_replace('"', '', $infoLoop["cim_name"]);

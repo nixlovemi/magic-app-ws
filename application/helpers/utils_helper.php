@@ -73,5 +73,6 @@ function readUrlApi($url){
   // Closing
   curl_close($ch);
 
+  usleep(250000); //0.25 seg
   return $result;
 }

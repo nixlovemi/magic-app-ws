@@ -1,5 +1,84 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+// passa o array retornado pelo scryfall e devolve um array pra inserir no BD
+function cardScryfallToBd($arrCardScryFall){
+  $arrCard = array(
+    "car_arena_id"          => $arrCardScryFall["arena_id"] ?? null,
+    "car_uid"               => $arrCardScryFall["id"] ?? null,
+    "car_lang"              => $arrCardScryFall["lang"] ?? null,
+    "car_mtgo_id"           => $arrCardScryFall["mtgo_id"] ?? null,
+    "car_mtgo_foil_id"      => $arrCardScryFall["mtgo_foil_id"] ?? null,
+    "car_multiverse_ids"    => (isset($arrCardScryFall["multiverse_ids"])) ? json_encode($arrCardScryFall["multiverse_ids"]): null,
+    "car_tcgplayer_id"      => $arrCardScryFall["tcgplayer_id"] ?? null,
+    "car_oracle_id"         => $arrCardScryFall["oracle_id"] ?? null,
+    "car_prints_search_uri" => $arrCardScryFall["prints_search_uri"] ?? null,
+    "car_rulings_uri"       => $arrCardScryFall["rulings_uri"] ?? null,
+    "car_scryfall_uri"      => $arrCardScryFall["scryfall_uri"] ?? null,
+    "car_uri"               => $arrCardScryFall["uri"] ?? null,
+    "car_all_parts"         => (isset($arrCardScryFall["all_parts"])) ? json_encode($arrCardScryFall["all_parts"]): null,
+    "car_card_faces"        => (isset($arrCardScryFall["card_faces"])) ? json_encode($arrCardScryFall["card_faces"]): null,
+    "car_cmc"               => $arrCardScryFall["cmc"] ?? null,
+    "car_colors"            => (isset($arrCardScryFall["colors"])) ? json_encode($arrCardScryFall["colors"]): null,
+    "car_color_identity"    => (isset($arrCardScryFall["color_identity"])) ? json_encode($arrCardScryFall["color_identity"]): null,
+    "car_color_indicator"   => (isset($arrCardScryFall["color_indicator"])) ? json_encode($arrCardScryFall["color_indicator"]): null,
+    "car_edhrec_rank"       => $arrCardScryFall["edhrec_rank"] ?? null,
+    "car_foil"              => $arrCardScryFall["foil"] ?? null,
+    "car_hand_modifier"     => $arrCardScryFall["hand_modifier"] ?? null,
+    "car_layout"            => $arrCardScryFall["layout"] ?? null,
+    "car_legalities"        => (isset($arrCardScryFall["legalities"])) ? json_encode($arrCardScryFall["legalities"]): null,
+    "car_life_modifier"     => $arrCardScryFall["life_modifier"] ?? null,
+    "car_loyalty"           => $arrCardScryFall["loyalty"] ?? null,
+    "car_mana_cost"         => $arrCardScryFall["mana_cost"] ?? null,
+    "car_name"              => $arrCardScryFall["name"] ?? null,
+    "car_cdn_id"            => 0, //sempre zero pq trigger atualiza
+    "car_nonfoil"           => $arrCardScryFall["nonfoil"] ?? null,
+    "car_oracle_text"       => $arrCardScryFall["oracle_text"] ?? null,
+    "car_oversized"         => $arrCardScryFall["oversized"] ?? null,
+    "car_power"             => $arrCardScryFall["power"] ?? null,
+    "car_reserved"          => $arrCardScryFall["reserved"] ?? null,
+    "car_toughness"         => $arrCardScryFall["toughness"] ?? null,
+    "car_type_line"         => $arrCardScryFall["type_line"] ?? null,
+    "car_artist"            => $arrCardScryFall["artist"] ?? null,
+    "car_booster"           => $arrCardScryFall["booster"] ?? null,
+    "car_border_color"      => $arrCardScryFall["border_color"] ?? null,
+    "car_card_back_id"      => $arrCardScryFall["card_back_id"] ?? null,
+    "car_collector_number"  => $arrCardScryFall["collector_number"] ?? null,
+    "car_digital"           => $arrCardScryFall["digital"] ?? null,
+    "car_flavor_text"       => $arrCardScryFall["flavor_text"] ?? null,
+    "car_frame_effect"      => $arrCardScryFall["frame_effect"] ?? null,
+    "car_frame"             => $arrCardScryFall["frame"] ?? null,
+    "car_full_art"          => $arrCardScryFall["full_art"] ?? null,
+    "car_games"             => (isset($arrCardScryFall["games"])) ? json_encode($arrCardScryFall["games"]): null,
+    "car_highres_image"     => $arrCardScryFall["highres_image"] ?? null,
+    "car_illustration_id"   => $arrCardScryFall["illustration_id"] ?? null,
+    "car_image_uris"        => (isset($arrCardScryFall["image_uris"])) ? json_encode($arrCardScryFall["image_uris"]): null,
+    "car_prices"            => (isset($arrCardScryFall["prices"])) ? json_encode($arrCardScryFall["prices"]): null,
+    "car_printed_name"      => $arrCardScryFall["printed_name"] ?? null,
+    "car_printed_text"      => $arrCardScryFall["printed_text"] ?? null,
+    "car_printed_type_line" => $arrCardScryFall["printed_type_line"] ?? null,
+    "car_promo"             => $arrCardScryFall["promo"] ?? null,
+    "car_promo_types"       => (isset($arrCardScryFall["promo_types"])) ? json_encode($arrCardScryFall["promo_types"]): null,
+    "car_purchase_uris"     => (isset($arrCardScryFall["purchase_uris"])) ? json_encode($arrCardScryFall["purchase_uris"]): null,
+    "car_rarity"            => $arrCardScryFall["rarity"] ?? null,
+    "car_related_uris"      => (isset($arrCardScryFall["related_uris"])) ? json_encode($arrCardScryFall["related_uris"]): null,
+    "car_released_at"       => $arrCardScryFall["released_at"] ?? null,
+    "car_reprint"           => $arrCardScryFall["reprint"] ?? null,
+    "car_scryfall_set_uri"  => $arrCardScryFall["scryfall_set_uri"] ?? null,
+    "car_set_name"          => $arrCardScryFall["set_name"] ?? null,
+    "car_set_id"            => 0, //sempre zero pq trigger atualiza
+    "car_set_search_uri"    => $arrCardScryFall["set_search_uri"] ?? null,
+    "car_set_type"          => $arrCardScryFall["set_type"] ?? null,
+    "car_set_uri"           => $arrCardScryFall["set_uri"] ?? null,
+    "car_set"               => $arrCardScryFall["set"] ?? null,
+    "car_story_spotlight"   => $arrCardScryFall["story_spotlight"] ?? null,
+    "car_textless"          => $arrCardScryFall["textless"] ?? null,
+    "car_variation"         => $arrCardScryFall["car_variation"] ?? null,
+    "car_variation_of"      => $arrCardScryFall["variation_of"] ?? null,
+    "car_watermark"         => $arrCardScryFall["watermark"] ?? null,
+  );
+  return $arrCard;
+}
+
 function fncUpdateCardsBySet($setCode){
   $ci =& get_instance();
   $ci->load->helper("utils_helper");
@@ -18,6 +97,7 @@ function fncUpdateCardsBySet($setCode){
     $ci->load->database();
     $ci->db->select('car_id, car_uid');
     $ci->db->from('tb_card');
+    $ci->db->where('car_set=', $setCode);
     $query    = $ci->db->get();
     $arrCards = $query->result_array();
 
@@ -36,80 +116,7 @@ function fncUpdateCardsBySet($setCode){
       $data     = $jsonReturn["data"] ?? array();
 
       foreach($data as $card){
-        $arrCard = array(
-          "car_arena_id"          => $card["arena_id"] ?? null,
-          "car_uid"               => $card["id"] ?? null,
-          "car_lang"              => $card["lang"] ?? null,
-          "car_mtgo_id"           => $card["mtgo_id"] ?? null,
-          "car_mtgo_foil_id"      => $card["mtgo_foil_id"] ?? null,
-          "car_multiverse_ids"    => (isset($card["multiverse_ids"])) ? json_encode($card["multiverse_ids"]): null,
-          "car_tcgplayer_id"      => $card["tcgplayer_id"] ?? null,
-          "car_oracle_id"         => $card["oracle_id"] ?? null,
-          "car_prints_search_uri" => $card["prints_search_uri"] ?? null,
-          "car_rulings_uri"       => $card["rulings_uri"] ?? null,
-          "car_scryfall_uri"      => $card["scryfall_uri"] ?? null,
-          "car_uri"               => $card["uri"] ?? null,
-          "car_all_parts"         => (isset($card["all_parts"])) ? json_encode($card["all_parts"]): null,
-          "car_card_faces"        => (isset($card["card_faces"])) ? json_encode($card["card_faces"]): null,
-          "car_cmc"               => $card["cmc"] ?? null,
-          "car_colors"            => (isset($card["colors"])) ? json_encode($card["colors"]): null,
-          "car_color_identity"    => (isset($card["color_identity"])) ? json_encode($card["color_identity"]): null,
-          "car_color_indicator"   => (isset($card["color_indicator"])) ? json_encode($card["color_indicator"]): null,
-          "car_edhrec_rank"       => $card["edhrec_rank"] ?? null,
-          "car_foil"              => $card["foil"] ?? null,
-          "car_hand_modifier"     => $card["hand_modifier"] ?? null,
-          "car_layout"            => $card["layout"] ?? null,
-          "car_legalities"        => (isset($card["legalities"])) ? json_encode($card["legalities"]): null,
-          "car_life_modifier"     => $card["life_modifier"] ?? null,
-          "car_loyalty"           => $card["loyalty"] ?? null,
-          "car_mana_cost"         => $card["mana_cost"] ?? null,
-          "car_name"              => $card["name"] ?? null,
-          "car_cdn_id"            => 0, //sempre zero pq trigger atualiza
-          "car_nonfoil"           => $card["nonfoil"] ?? null,
-          "car_oracle_text"       => $card["oracle_text"] ?? null,
-          "car_oversized"         => $card["oversized"] ?? null,
-          "car_power"             => $card["power"] ?? null,
-          "car_reserved"          => $card["reserved"] ?? null,
-          "car_toughness"         => $card["toughness"] ?? null,
-          "car_type_line"         => $card["type_line"] ?? null,
-          "car_artist"            => $card["artist"] ?? null,
-          "car_booster"           => $card["booster"] ?? null,
-          "car_border_color"      => $card["border_color"] ?? null,
-          "car_card_back_id"      => $card["card_back_id"] ?? null,
-          "car_collector_number"  => $card["collector_number"] ?? null,
-          "car_digital"           => $card["digital"] ?? null,
-          "car_flavor_text"       => $card["flavor_text"] ?? null,
-          "car_frame_effect"      => $card["frame_effect"] ?? null,
-          "car_frame"             => $card["frame"] ?? null,
-          "car_full_art"          => $card["full_art"] ?? null,
-          "car_games"             => (isset($card["games"])) ? json_encode($card["games"]): null,
-          "car_highres_image"     => $card["highres_image"] ?? null,
-          "car_illustration_id"   => $card["illustration_id"] ?? null,
-          "car_image_uris"        => (isset($card["image_uris"])) ? json_encode($card["image_uris"]): null,
-          "car_prices"            => (isset($card["prices"])) ? json_encode($card["prices"]): null,
-          "car_printed_name"      => $card["printed_name"] ?? null,
-          "car_printed_text"      => $card["printed_text"] ?? null,
-          "car_printed_type_line" => $card["printed_type_line"] ?? null,
-          "car_promo"             => $card["promo"] ?? null,
-          "car_promo_types"       => (isset($card["promo_types"])) ? json_encode($card["promo_types"]): null,
-          "car_purchase_uris"     => (isset($card["purchase_uris"])) ? json_encode($card["purchase_uris"]): null,
-          "car_rarity"            => $card["rarity"] ?? null,
-          "car_related_uris"      => (isset($card["related_uris"])) ? json_encode($card["related_uris"]): null,
-          "car_released_at"       => $card["released_at"] ?? null,
-          "car_reprint"           => $card["reprint"] ?? null,
-          "car_scryfall_set_uri"  => $card["scryfall_set_uri"] ?? null,
-          "car_set_name"          => $card["set_name"] ?? null,
-          "car_set_id"            => 0, //sempre zero pq trigger atualiza
-          "car_set_search_uri"    => $card["set_search_uri"] ?? null,
-          "car_set_type"          => $card["set_type"] ?? null,
-          "car_set_uri"           => $card["set_uri"] ?? null,
-          "car_set"               => $card["set"] ?? null,
-          "car_story_spotlight"   => $card["story_spotlight"] ?? null,
-          "car_textless"          => $card["textless"] ?? null,
-          "car_variation"         => $card["car_variation"] ?? null,
-          "car_variation_of"      => $card["variation_of"] ?? null,
-          "car_watermark"         => $card["watermark"] ?? null,
-        );
+        $arrCard = cardScryfallToBd($card);
 
         $jaExiste = in_array($card["id"], $arrCardsUid);
         if($jaExiste){

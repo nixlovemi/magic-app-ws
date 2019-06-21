@@ -6,6 +6,7 @@ class Cards extends CI_Controller {
     CI_Controller::__construct();
 
     $this->load->helper("cards_helper");
+    $this->load->helper("utils_helper");
   }
 
   public function updateCardsName(){
@@ -30,6 +31,7 @@ class Cards extends CI_Controller {
       $this->db->from('tb_cards_name');
       $query    = $this->db->get();
       $arrCards = $query->result_array();
+      $this->db->reset_query();
 
       foreach($arrCards as $arrCardName){
         $arrCardsName[] = $arrCardName["cdn_name"];
@@ -57,6 +59,25 @@ class Cards extends CI_Controller {
         }
       }
       // ==================
+
+      // atualiza todas as cartas que não tinham card_name
+      $this->db->distinct();
+      $this->db->select('car_id, car_uid');
+      $this->db->from('tb_card');
+      $this->db->where('car_cdn_id = 0');
+      $this->db->where("car_layout NOT IN ('token', 'emblem', 'double_faced_token')");
+
+      $query = $this->db->get();
+      $arrRs = $query->result_array();
+      $this->db->reset_query();
+      foreach($arrRs as $row){
+        $carId  = $row["car_id"];
+        $carUid = $row["car_uid"];
+        $this->updateCardByUid($carUid);
+
+        $this->db->delete('tb_card_images', array('cim_car_id' => $carId));
+      }
+      // =================================================
     }
   }
 
@@ -67,5 +88,38 @@ class Cards extends CI_Controller {
 
     list($retInsert, $retUpdate) = fncUpdateCardsBySet($setCode);
     // @todo tratar retorno
+  }
+
+  public function updateCardByUid($uid){
+    error_reporting(E_ALL);
+    ini_set("display_errors", 1);
+
+    $url        = "https://api.scryfall.com/cards/$uid";
+		$return     = readUrlApi($url);
+    $jsonReturn = json_decode($return, true);
+
+    $object     = $jsonReturn["object"] ?? "";
+    if($object == "error"){
+      //@todo tratar erros
+    } elseif($object == "card"){
+      // verifica se carta ja existe
+      $this->load->database();
+      $this->db->select('car_id');
+      $this->db->from('tb_card');
+      $this->db->where('car_uid=', $uid);
+      $query    = $this->db->get();
+      $arrCard  = $query->result_array();
+      $jaExiste = count($arrCard) > 0;
+      $this->db->reset_query();
+      // ===========================
+
+      $card = cardScryfallToBd($jsonReturn);
+      if($jaExiste){
+        $this->db->where('car_id', $arrCard[0]["car_id"] ?? -1);
+        $this->db->update('tb_card', $card);
+      } else {
+        $this->db->insert('tb_card', $card);
+      }
+    }
   }
 }
