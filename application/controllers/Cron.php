@@ -26,6 +26,7 @@ class Cron extends CI_Controller {
       $vSetCode = $rs["set_code"];
 
       list($retInsert, $retUpdate) = fncUpdateCardsBySet($vSetCode);
+      usleep(250000); //0.25 seg
       // @todo tratar retorno
 
       // atualiza os sets pro proximo update
@@ -109,6 +110,7 @@ class Cron extends CI_Controller {
         copy($urlSmall, FCPATH.$newUrlSmall);
         copy($urlNormal, FCPATH.$newUrlNormal);
         copy($urlLarge, FCPATH.$newUrlLarge);
+        usleep(250000); //0.25 seg
 
         $infoLoop["cim_url_small"]  = $newUrlSmall;
         $infoLoop["cim_url_normal"] = $newUrlNormal;
