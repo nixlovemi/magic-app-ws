@@ -113,6 +113,7 @@ class Cron extends CI_Controller {
         usleep(250000); //0.25 seg
 
         $infoLoop["cim_url_small"]  = $newUrlSmall;
+        $infoLoop["cim_name"]       = str_replace('"', '', $infoLoop["cim_name"]);
         $infoLoop["cim_url_normal"] = $newUrlNormal;
         $infoLoop["cim_url_large"]  = $newUrlLarge;
 
