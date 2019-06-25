@@ -1,9 +1,20 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+require_once FCPATH.'/application/third_party/meyfa-php-svg/autoloader.php';
+use SVG\SVG;
+
 class Sets extends CI_Controller {
   public function __construct(){
     CI_Controller::__construct();
+
+    header('Access-Control-Allow-Origin: *');
+    header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+    $method = $_SERVER['REQUEST_METHOD'];
+    if($method == "OPTIONS") {
+      die();
+    }
 
     $this->load->helper("utils_helper");
   }
@@ -90,4 +101,85 @@ class Sets extends CI_Controller {
       // ==================
     }
 	}
+
+  public function getSetImage(){
+    error_reporting(E_ALL);
+    ini_set("display_errors", 1);
+
+    $this->load->database();
+
+    $this->db->select('set_id, set_icon_svg_uri, set_code');
+    $this->db->from('tb_set');
+    $this->db->join('tb_set_images', 'set_id = sim_set_id', 'left');
+    $this->db->where('sim_id IS NULL');
+    $this->db->where("set_icon_svg_uri <> ''");
+    $this->db->where('set_released_at <=', date("Y-m-d H:i:s"));
+    $this->db->limit(50);
+
+    $query = $this->db->get();
+    $arrRs = $query->result_array();
+
+    $arrBatchInsert = [];
+    foreach($arrRs as $rs){
+      $urlSvg    = $rs["set_icon_svg_uri"];
+      $setCode   = $rs["set_code"];
+      $setId     = $rs["set_id"];
+      $newGifUrl = 'sets_images/'.$setId.'-'.$setCode.'.svg';
+
+      usleep(250000); //0.25 seg
+
+      $dom = new DOMDocument('1.0', 'utf-8');
+      $dom->load($urlSvg);
+      $svg = $dom->documentElement;
+
+      if ( ! $svg->hasAttribute('viewBox') ) { // viewBox is needed to establish
+                                               // userspace coordinates
+           $pattern = '/^(\d*\.\d+|\d+)(px)?$/'; // positive number, px unit optional
+
+           $interpretable =  preg_match( $pattern, $svg->getAttribute('width'), $width ) &&
+                             preg_match( $pattern, $svg->getAttribute('height'), $height );
+
+           if ( $interpretable ) {
+              $view_box = implode(' ', [0, 0, $width[0], $height[0]]);
+              $svg->setAttribute('viewBox', $view_box);
+          } else { // this gets sticky
+              throw new Exception("viewBox is dependent on environment");
+          }
+      }
+
+      $svg->setAttribute('width', '150');
+      $svg->setAttribute('height', '150');
+      $dom->save(FCPATH . $newGifUrl);
+
+      $arrBatchInsert[] = array(
+        "sim_set_id" => $setId,
+        "sim_url"    => $newGifUrl,
+      );
+    }
+
+    // executa os INSERTS
+    if(count($arrBatchInsert) > 0){
+      $retInsert = $this->db->insert_batch('tb_set_images', $arrBatchInsert);
+      if($retInsert === false){
+        //@todo tratar erro
+      }
+    }
+    // ==================
+  }
+
+  public function testSets(){
+    //$postVars = proccessPost();
+
+    $this->load->database();
+
+    $this->db->select('set_id, set_code, set_name, set_scryfall_uri, set_released_at, set_card_count, set_block_code, set_block, set_type');
+    $this->db->from('tb_set');
+    $this->db->where('set_released_at <=', date("Y-m-d H:i:s"));
+    $this->db->order_by('set_released_at', 'DESC');
+
+    $query = $this->db->get();
+    $arrRs = $query->result_array();
+
+    echo json_encode($arrRs);
+  }
 }
