@@ -167,8 +167,8 @@ class Sets extends CI_Controller {
     // ==================
   }
 
-  public function testSets(){
-    //$postVars = proccessPost();
+  public function updateLocalSets(){
+    $postVars = proccessPost();
 
     $this->load->database();
 
@@ -180,6 +180,12 @@ class Sets extends CI_Controller {
     $query = $this->db->get();
     $arrRs = $query->result_array();
 
-    echo json_encode($arrRs);
+    $arrJson = [];
+    foreach($arrRs as $row){
+      $setId           = $row["set_id"];
+      $arrJson[$setId] = $row;
+    }
+
+    echo json_encode($arrJson);
   }
 }
