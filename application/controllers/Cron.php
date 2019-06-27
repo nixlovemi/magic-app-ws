@@ -1,11 +1,13 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+require_once FCPATH.'/application/third_party/compress-image/Compress.php';
 
 class Cron extends CI_Controller {
   public function __construct(){
     CI_Controller::__construct();
 
     $this->load->helper("cards_helper");
+    $this->load->helper("utils_helper");
   }
 
   public function updateCards(){
@@ -124,6 +126,52 @@ class Cron extends CI_Controller {
     if(count($arrBatchInsert) > 0){
       $retInsert = $this->db->insert_batch('tb_card_images', $arrBatchInsert);
       if($retInsert === false){
+        //@todo tratar erro
+      }
+    }
+    // ==================
+  }
+
+  public function compressAppImg(){
+    error_reporting(E_ALL);
+    ini_set("display_errors", 1);
+
+    $this->load->database();
+    $this->db->select('cim_id, cim_car_id, cim_url_large');
+    $this->db->from('tb_card_images');
+    $this->db->where('cim_url_large IS NOT NULL');
+    $this->db->where('cim_url_app IS NULL');
+    $this->db->order_by('cim_id', 'ASC');
+    $this->db->limit(100);
+
+    $query = $this->db->get();
+    $arrRs = $query->result_array();
+
+    $arrBatchUpdate = [];
+    foreach($arrRs as $rs){
+      $newName = basename ($rs["cim_url_large"], ".jpg");
+
+      $file           = FCPATH . $rs["cim_url_large"]; //file that you wanna compress
+      $new_name_image = $newName; //name of new file compressed
+      $quality        = 40; // Value that I chose
+      $pngQuality     = 9; // Exclusive for PNG files
+      $destination    = FCPATH . '/cards_images/app_size'; //This destination must be exist on your project
+      $maxsize        = 5245330; //Set maximum image size in bytes. if no value given 5mb by default.
+
+      $image_compress = new Compress($file, $new_name_image, $quality, $pngQuality, $destination, $maxsize);
+      $image_compress->compress_image();
+      resize(450, FCPATH . "/cards_images/app_size/$newName", FCPATH . "/cards_images/app_size/$newName.jpg");
+
+      $arrBatchUpdate[] = array(
+        "cim_id"      => $rs["cim_id"],
+        "cim_url_app" => "cards_images/app_size/$newName.jpg",
+      );
+    }
+
+    // executa os UPDATES
+    if(count($arrBatchUpdate) > 0){
+      $retUpdate = $this->db->update_batch('tb_card_images', $arrBatchUpdate, 'cim_id');
+      if($retUpdate === false){
         //@todo tratar erro
       }
     }
