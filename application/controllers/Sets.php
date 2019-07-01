@@ -168,6 +168,9 @@ class Sets extends CI_Controller {
   }
 
   public function updateLocalSets(){
+    set_time_limit (180);
+    header('Content-disposition: attachment; filename=sets.json');
+    header('Content-type: application/json');
     $postVars = proccessPost();
 
     $this->load->database();
@@ -184,6 +187,37 @@ class Sets extends CI_Controller {
     foreach($arrRs as $row){
       $setId           = $row["set_id"];
       $arrJson[$setId] = $row;
+    }
+
+    echo json_encode($arrJson);
+  }
+
+  public function updateLocalSetsCards(){
+    set_time_limit (180);
+    header('Content-disposition: attachment; filename=set_cards.json');
+    header('Content-type: application/json');
+    $postVars = proccessPost();
+
+    $this->load->database();
+
+    $this->db->select("car_id, car_set_id");
+    $this->db->from('tb_card');
+    $this->db->where('car_released_at <=', date("Y-m-d H:i:s"));
+    $this->db->order_by('car_released_at', 'DESC');
+    $this->db->order_by('car_set_id', 'ASC');
+    $this->db->order_by('car_collector_number', 'ASC');
+
+    $query = $this->db->get();
+    $arrRs = $query->result_array();
+
+    $arrJson = [];
+    foreach($arrRs as $row){
+      $setId           = $row["car_set_id"];
+      if(!array_key_exists($setId, $arrJson)){
+        $arrJson[$setId] = [];
+      }
+
+      $arrJson[$setId][] = $row["car_id"];
     }
 
     echo json_encode($arrJson);
