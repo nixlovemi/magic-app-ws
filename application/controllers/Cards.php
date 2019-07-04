@@ -5,6 +5,14 @@ class Cards extends CI_Controller {
   public function __construct(){
     CI_Controller::__construct();
 
+    header('Access-Control-Allow-Origin: *');
+    header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+    $method = $_SERVER['REQUEST_METHOD'];
+    if($method == "OPTIONS") {
+      die();
+    }
+
     $this->load->helper("cards_helper");
     $this->load->helper("utils_helper");
   }
@@ -206,5 +214,47 @@ class Cards extends CI_Controller {
     }
 
     echo json_encode($arrJson);
+  }
+
+  public function downloadSetCardImages(){
+    error_reporting(E_ALL);
+    ini_set("display_errors", 1);
+    $postVars = proccessPost();
+
+    $vSetCode = $postVars->setCode ?? "";
+    $this->load->database();
+
+    $this->db->select('car_id, cim_url_app');
+    $this->db->from('tb_card_images');
+    $this->db->join('tb_card', 'car_id = cim_car_id');
+    $this->db->where('car_set =', $vSetCode);
+
+    $query = $this->db->get();
+    $arrRs = $query->result_array();
+
+    $zip      = new ZipArchive();
+    $zipName  = $vSetCode . "__" . date("Y-m-d") . ".zip";
+    $filename = FCPATH . "/cards_img_zip/$zipName";
+    if ($zip->open($filename, ZIPARCHIVE::CREATE)!==TRUE) {
+      exit("cannot open <$filename>\n");
+    }
+
+    foreach($arrRs as $row){
+      $urlImg  = $row["cim_url_app"];
+      $imgName = basename($urlImg);
+      $zip->addFile(FCPATH . $urlImg, $imgName);
+    }
+
+    $zip->close();
+
+    if(file_exists($filename)){
+      // Forçamos o donwload do arquivo.
+      header('Content-Type: application/zip');
+      header('Content-Disposition: attachment; filename="'.$zipName.'"');
+      readfile($filename);
+
+      //removemos o arquivo zip após download
+      //unlink($fullPath);
+    }
   }
 }
