@@ -1,4 +1,5 @@
 <?php
+// https://admin.postgresql.uhserver.com
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Cards extends CI_Controller {
@@ -132,10 +133,11 @@ class Cards extends CI_Controller {
   }
 
   public function updateLocalCardsName(){
+    ini_set('memory_limit', '-1');
     set_time_limit (180);
     header('Content-disposition: attachment; filename=cards_name.json');
     header('Content-type: application/json');
-    $postVars = proccessPost();
+    #$postVars = proccessPost();
 
     $this->load->database();
 
@@ -160,11 +162,11 @@ class Cards extends CI_Controller {
                 ,car_type_line
                 ,car_rarity
                 ,car_id
-                ,RANK() OVER (PARTITION BY cdn_id ORDER BY car_released_at DESC, car_id DESC)
+                ,RANK() OVER (PARTITION BY cdn_id, car_id ORDER BY car_released_at DESC)
         FROM tb_cards_name
-        INNER JOIN tb_card ON car_cdn_id = cdn_id
-        WHERE car_released_at < '2019-06-28 23:59:59'
-        AND cdn_id <> 0
+        LEFT JOIN tb_card ON car_cdn_id = cdn_id
+        WHERE car_released_at < '".date("Y-m-d H:i:s")."'
+        ORDER BY car_collector_number
       )t
     ");
     $this->db->where('rank =', 1);
