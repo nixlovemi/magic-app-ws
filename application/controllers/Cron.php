@@ -26,7 +26,6 @@ class Cron extends CI_Controller {
     foreach($arrRs as $rs){
       $vSetId   = $rs["set_id"];
       $vSetCode = $rs["set_code"];
-
       list($retInsert, $retUpdate) = fncUpdateCardsBySet($vSetCode);
       // @todo tratar retorno
 

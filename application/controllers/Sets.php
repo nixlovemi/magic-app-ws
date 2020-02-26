@@ -19,12 +19,12 @@ class Sets extends CI_Controller {
     $this->load->helper("utils_helper");
   }
 
-	public function updateSets(){
+  public function updateSets(){
     error_reporting(E_ALL);
     ini_set("display_errors", 1);
 
     $url        = "https://api.scryfall.com/sets";
-		$return     = readUrlApi($url);
+	$return     = readUrlApi($url);
     $jsonReturn = json_decode($return, true);
 
     $object     = $jsonReturn["object"] ?? "";
@@ -200,14 +200,14 @@ class Sets extends CI_Controller {
 
     $this->load->database();
 
-    $this->db->select("car_id, car_set_id");
-    $this->db->from('tb_card');
-    $this->db->where('car_released_at <=', date("Y-m-d H:i:s"));
-    $this->db->order_by('car_released_at', 'DESC');
-    $this->db->order_by('car_set_id', 'ASC');
-    $this->db->order_by('car_collector_number', 'ASC');
-
-    $query = $this->db->get();
+    $dt  = date("Y-m-d H:i:s");
+    $sql = "
+      SELECT car_id, car_set_id
+      FROM tb_card
+      WHERE car_released_at <= '$dt'
+      ORDER BY car_released_at DESC, car_set_id ASC, NULLIF(regexp_replace(car_collector_number, '\D', '', 'g'), '')::int ASC
+    ";
+    $query = $this->db->query($sql);
     $arrRs = $query->result_array();
 
     $arrJson = [];

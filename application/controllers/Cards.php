@@ -4,6 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Cards extends CI_Controller {
   public function __construct(){
+    ini_set('memory_limit', '1024M');
     CI_Controller::__construct();
 
     header('Access-Control-Allow-Origin: *');
@@ -166,7 +167,7 @@ class Cards extends CI_Controller {
         FROM tb_cards_name
         LEFT JOIN tb_card ON car_cdn_id = cdn_id
         WHERE car_released_at < '".date("Y-m-d H:i:s")."'
-        ORDER BY car_collector_number
+        ORDER BY NULLIF(regexp_replace(car_collector_number, '\D', '', 'g'), '')::int
       )t
     ");
     $this->db->where('rank =', 1);
@@ -192,20 +193,19 @@ class Cards extends CI_Controller {
 
     $this->load->database();
 
-    $fldNames = "car_id, car_uid, car_lang, car_scryfall_uri,
-                 car_foil, car_name, car_nonfoil, car_oracle_text,
-                 car_collector_number, car_games, car_prices, car_printed_name,
-                 car_printed_text, car_printed_type_line, car_released_at,
-                 car_set_name, car_set_type, car_set, car_cdn_id, cim_url_app";
-    $this->db->select($fldNames);
-    $this->db->from('tb_card');
-    $this->db->join('tb_card_images', 'cim_car_id = car_id', 'left');
-    $this->db->where('car_released_at <=', date("Y-m-d H:i:s"));
-    $this->db->order_by('car_released_at', 'DESC');
-    $this->db->order_by('car_set', 'ASC');
-    $this->db->order_by('car_collector_number', 'ASC');
-
-    $query = $this->db->get();
+    $dt  = date("Y-m-d H:i:s");
+    $sql = "
+      SELECT car_id, car_uid, car_lang, car_scryfall_uri,
+             car_foil, car_name, car_nonfoil, car_oracle_text,
+             car_collector_number, car_games, car_prices, car_printed_name,
+             car_printed_text, car_printed_type_line, car_released_at,
+             car_set_name, car_set_type, car_set, car_cdn_id, cim_url_app
+      FROM tb_card
+      LEFT JOIN tb_card_images ON (cim_car_id = car_id)
+      WHERE car_released_at <= '$dt'
+      ORDER BY car_released_at DESC, car_set ASC, NULLIF(regexp_replace(car_collector_number, '\D', '', 'g'), '')::int ASC
+    ";
+    $query = $this->db->query($sql);
     $arrRs = $query->result_array();
 
     $arrJson = [];
@@ -230,6 +230,7 @@ class Cards extends CI_Controller {
     $this->db->from('tb_card_images');
     $this->db->join('tb_card', 'car_id = cim_car_id');
     $this->db->where('car_set =', $vSetCode);
+    $this->db->where('cim_url_app IS NOT NULL');
 
     $query = $this->db->get();
     $arrRs = $query->result_array();
